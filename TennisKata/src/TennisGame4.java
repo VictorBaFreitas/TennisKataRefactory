@@ -1,16 +1,16 @@
 public class TennisGame4 implements TennisGame {
 
-    int serverScore;
-    int receiverScore;
-    String server;
-    String receiver;
+    private int serverScore;
+    private int receiverScore;
+    private String server;
+    private String receiver;
 
     public TennisGame4(String player1, String player2) {
         this.server = player1;
         this.receiver = player2;
     }
 
-    @java.lang.Override
+    @Override
     public void wonPoint(String playerName) {
         if (server.equals(playerName))
             this.serverScore += 1;
@@ -18,14 +18,14 @@ public class TennisGame4 implements TennisGame {
             this.receiverScore += 1;
     }
 
-    @java.lang.Override
+    @Override
     public String getScore() {
         TennisResult result = new Deuce(
-                this, new GameServer(
-                        this, new GameReceiver(
-                                this, new AdvantageServer(
-                                        this, new AdvantageReceiver(
-                                                this, new DefaultResult(this)))))).getResult();
+                new GameServer(
+                        new GameReceiver(
+                                new AdvantageServer(
+                                        new AdvantageReceiver(
+                                                new DefaultResult()))))).getResult();
         return result.format();
     }
 
@@ -48,128 +48,112 @@ public class TennisGame4 implements TennisGame {
     boolean isDeuce() {
         return serverScore >= 3 && receiverScore >= 3 && (serverScore == receiverScore);
     }
-}
 
-class TennisResult {
-    String serverScore;
-    String receiverScore;
+    class TennisResult {
+        String serverScore;
+        String receiverScore;
 
-    TennisResult(String serverScore, String receiverScore) {
-        this.serverScore = serverScore;
-        this.receiverScore = receiverScore;
+        TennisResult(String serverScore, String receiverScore) {
+            this.serverScore = serverScore;
+            this.receiverScore = receiverScore;
+        }
+
+        String format() {
+            if ("".equals(this.receiverScore))
+                return this.serverScore;
+            if (serverScore.equals(receiverScore))
+                return serverScore + "-All";
+            return this.serverScore + "-" + this.receiverScore;
+        }
     }
 
-    String format() {
-        if ("".equals(this.receiverScore))
-            return this.serverScore;
-        if (serverScore.equals(receiverScore))
-            return serverScore + "-All";
-        return this.serverScore + "-" + this.receiverScore;
-    }
-}
-
-interface ResultProvider {
-    TennisResult getResult();
-}
-
-class Deuce implements ResultProvider {
-    private final TennisGame4 game;
-    private final ResultProvider nextResult;
-
-    public Deuce(TennisGame4 game, ResultProvider nextResult) {
-        this.game = game;
-        this.nextResult = nextResult;
+    interface ResultProvider {
+        TennisResult getResult();
     }
 
-    @Override
-    public TennisResult getResult() {
-        if (game.isDeuce())
-            return new TennisResult("Deuce", "");
-        return this.nextResult.getResult();
-    }
-}
+    class Deuce implements ResultProvider {
+        private final ResultProvider nextResult;
 
-class GameServer implements ResultProvider {
-    private final TennisGame4 game;
-    private final ResultProvider nextResult;
+        public Deuce(ResultProvider nextResult) {
+            this.nextResult = nextResult;
+        }
 
-    public GameServer(TennisGame4 game, ResultProvider nextResult) {
-        this.game = game;
-        this.nextResult = nextResult;
+        @Override
+        public TennisResult getResult() {
+            if (isDeuce())
+                return new TennisResult("Deuce", "");
+            return this.nextResult.getResult();
+        }
     }
 
-    @Override
-    public TennisResult getResult() {
-        if (game.serverHasWon())
-            return new TennisResult("Win for " + game.server, "");
-        return this.nextResult.getResult();
-    }
-}
+    class GameServer implements ResultProvider {
+        private final ResultProvider nextResult;
 
-class GameReceiver implements ResultProvider {
-    private final TennisGame4 game;
-    private final ResultProvider nextResult;
+        public GameServer(ResultProvider nextResult) {
+            this.nextResult = nextResult;
+        }
 
-    public GameReceiver(TennisGame4 game, ResultProvider nextResult) {
-        this.game = game;
-        this.nextResult = nextResult;
+        @Override
+        public TennisResult getResult() {
+            if (serverHasWon())
+                return new TennisResult("Win for " + server, "");
+            return this.nextResult.getResult();
+        }
     }
 
-    @Override
-    public TennisResult getResult() {
-        if (game.receiverHasWon())
-            return new TennisResult("Win for " + game.receiver, "");
-        return this.nextResult.getResult();
-    }
-}
+    class GameReceiver implements ResultProvider {
+        private final ResultProvider nextResult;
 
-class AdvantageServer implements ResultProvider {
-    private final TennisGame4 game;
-    private final ResultProvider nextResult;
+        public GameReceiver(ResultProvider nextResult) {
+            this.nextResult = nextResult;
+        }
 
-    public AdvantageServer(TennisGame4 game, ResultProvider nextResult) {
-        this.game = game;
-        this.nextResult = nextResult;
+        @Override
+        public TennisResult getResult() {
+            if (receiverHasWon())
+                return new TennisResult("Win for " + receiver, "");
+            return this.nextResult.getResult();
+        }
     }
 
-    @Override
-    public TennisResult getResult() {
-        if (game.serverHasAdvantage())
-            return new TennisResult("Advantage " + game.server, "");
-        return this.nextResult.getResult();
-    }
-}
+    class AdvantageServer implements ResultProvider {
+        private final ResultProvider nextResult;
 
-class AdvantageReceiver implements ResultProvider {
+        public AdvantageServer(ResultProvider nextResult) {
+            this.nextResult = nextResult;
+        }
 
-    private final TennisGame4 game;
-    private final ResultProvider nextResult;
-
-    public AdvantageReceiver(TennisGame4 game, ResultProvider nextResult) {
-        this.game = game;
-        this.nextResult = nextResult;
+        @Override
+        public TennisResult getResult() {
+            if (serverHasAdvantage())
+                return new TennisResult("Advantage " + server, "");
+            return this.nextResult.getResult();
+        }
     }
 
-    @Override
-    public TennisResult getResult() {
-        if (game.receiverHasAdvantage())
-            return new TennisResult("Advantage " + game.receiver, "");
-        return this.nextResult.getResult();
-    }
-}
+    class AdvantageReceiver implements ResultProvider {
 
-class DefaultResult implements ResultProvider {
+        private final ResultProvider nextResult;
 
-    private static final String[] scores = {"Love", "Fifteen", "Thirty", "Forty"};
+        public AdvantageReceiver(ResultProvider nextResult) {
+            this.nextResult = nextResult;
+        }
 
-    private final TennisGame4 game;
-
-    public DefaultResult(TennisGame4 game) {
-        this.game = game;
+        @Override
+        public TennisResult getResult() {
+            if (receiverHasAdvantage())
+                return new TennisResult("Advantage " + receiver, "");
+            return this.nextResult.getResult();
+        }
     }
 
-    @Override
-    public TennisResult getResult() {
-        return new TennisResult(scores[game.serverScore], scores[game.receiverScore]);
+    class DefaultResult implements ResultProvider {
+
+        private static final String[] scores = {"Love", "Fifteen", "Thirty", "Forty"};
+
+        @Override
+        public TennisResult getResult() {
+            return new TennisResult(scores[serverScore], scores[receiverScore]);
+        }
     }
 }
