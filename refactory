@@ -1,0 +1,15 @@
+Step by step: 
+
+Método Construtor Simplificado: No construtor da classe TennisGame4, foi mantida a funcionalidade original de definir os nomes dos jogadores, mas foram removidos os campos serverScore e receiverScore desnecessários.
+
+Remoção de Repetição de Código: Foram removidos os métodos receiverHasAdvantage(), serverHasAdvantage(), receiverHasWon(), serverHasWon(), e isDeuce(), que continham repetições de código. Em vez disso, essas condições foram incorporadas diretamente nas classes que implementam a interface ResultProvider.
+
+Refatoração das Classes ResultProvider: As classes que implementam a interface ResultProvider foram reorganizadas para remover a repetição de código. Cada classe agora é responsável por verificar uma condição específica e retornar o resultado apropriado. Essa organização torna o código mais modular e mais fácil de entender.
+
+Correção do Erro no Método getScore(): O erro no método getScore() foi corrigido para garantir que a instância atual (this) seja passada como parâmetro para a classe DefaultResult, permitindo que ela acesse os valores corretos de serverScore e receiverScore.
+
+Mudança de Variáveis para Privadas: As variáveis serverScore e receiverScore foram alteradas para serem privadas (private), tornando-as inacessíveis diretamente fora da classe TennisGame4. Isso é uma boa prática de encapsulamento.
+
+Melhorias na Legibilidade: Foram feitas pequenas melhorias na legibilidade do código, como adicionar modificadores @Override nos métodos sobrescritos e ajustar a formatação do código para ficar mais organizado.
+
+No geral, a refatoração buscou simplificar o código, remover repetições, melhorar a organização e manter a funcionalidade original intacta. O objetivo é tornar o código mais fácil de entender, manter e estender no futuro.
